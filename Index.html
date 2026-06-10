@@ -1,0 +1,1100 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMDR | Clinical Processing Framework</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    },
+                    colors: {
+                        stone: { 50: '#fafaf9', 100: '#f5f5f4', 200: '#e7e5e4', 300: '#d6d3d1', 400: '#a8a29e', 500: '#78716c', 600: '#57534e', 700: '#44403c', 800: '#292524', 900: '#1c1917' },
+                        ethos: { gold: '#C5A059', dark: '#0A0A0A' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #0A0A0A; -webkit-font-smoothing: antialiased; }
+        .glass-card {
+            background: rgba(24, 24, 27, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .input-style {
+            width: 100%;
+            background: rgba(9, 9, 11, 0.5);
+            border: 1px solid #27272a;
+            color: #e7e5e4;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+        }
+        .input-style:focus {
+            outline: none;
+            border-color: #C5A059;
+            background: rgba(197, 160, 89, 0.05);
+        }
+        
+        /* Custom Sliders */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #C5A059;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 10px rgba(197, 160, 89, 0.5);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #27272a;
+            border-radius: 2px;
+        }
+
+        /* BLS Animation */
+        @keyframes sweep {
+            0%, 100% { transform: translateX(calc(-50vw + 3rem)); }
+            50% { transform: translateX(calc(50vw - 3rem)); }
+        }
+        .bilateral-ball { animation: sweep 1.2s ease-in-out infinite; }
+        .bilateral-ball.slow-mode { animation: sweep 4s ease-in-out infinite; } /* Phase 2 Resourcing Speed */
+
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .resource-wheel-grid {
+            display: grid;
+            grid-template-areas: 
+                ". top ."
+                "left center right"
+                ". bottom .";
+            gap: 1rem;
+        }
+    </style>
+</head>
+
+<body class="text-stone-300 font-sans selection:bg-ethos-gold/30 overflow-x-hidden min-h-screen flex flex-col">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-zinc-900">
+        <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-4 cursor-pointer" onclick="app.showDashboard()">
+                <div class="w-7 h-7 bg-ethos-gold flex items-center justify-center rounded-[2px] hover:bg-white transition-colors">
+                    <span class="text-black font-black text-[10px]">FE</span>
+                </div>
+                <div class="h-4 w-[1px] bg-zinc-800"></div>
+                <span class="text-[9px] tracking-[0.3em] uppercase font-bold text-zinc-500" id="nav-phase-label">System Dashboard</span>
+            </div>
+            <div class="flex items-center gap-6">
+                <button onclick="app.showLogs()" class="text-[10px] uppercase tracking-widest font-bold text-ethos-gold hover:text-white transition-colors hidden md:block">
+                    Session Logs
+                </button>
+                <button onclick="app.clearData()" class="text-[10px] uppercase tracking-widest font-bold text-zinc-600 hover:text-red-400 transition-colors">
+                    Reset All Data
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow pt-28 pb-24 px-6 w-full max-w-4xl mx-auto relative">
+        
+        <!-- ==========================================
+             DASHBOARD (Home)
+             ========================================== -->
+        <div id="home-dashboard" class="fade-in space-y-8">
+            <header class="mb-12 text-center">
+                <h1 class="text-4xl md:text-5xl font-serif text-white mb-4">EMDR Clinical Framework</h1>
+                <p class="text-sm text-zinc-500 uppercase tracking-widest font-bold">Standard Protocol Navigation</p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Phase 1 Card -->
+                <button onclick="app.showPhase('phase-1')" class="glass-card p-8 rounded-2xl text-left hover:border-ethos-gold/40 transition-all group">
+                    <i data-lucide="git-branch" class="w-8 h-8 text-zinc-500 group-hover:text-ethos-gold mb-6 transition-colors"></i>
+                    <h3 class="text-[10px] uppercase tracking-widest font-bold text-ethos-gold mb-2">Phase 1</h3>
+                    <h2 class="text-xl font-serif text-stone-200 mb-3">Targeting Plan & History</h2>
+                    <p class="text-xs text-stone-500 leading-relaxed">Map belief schemas and construct your chronological timeline to identify the Touchstone memory.</p>
+                </button>
+
+                <!-- Phase 2 Card -->
+                <button onclick="app.showPhase('phase-2')" class="glass-card p-8 rounded-2xl text-left hover:border-ethos-gold/40 transition-all group">
+                    <i data-lucide="shield" class="w-8 h-8 text-zinc-500 group-hover:text-ethos-gold mb-6 transition-colors"></i>
+                    <h3 class="text-[10px] uppercase tracking-widest font-bold text-ethos-gold mb-2">Phase 2</h3>
+                    <h2 class="text-xl font-serif text-stone-200 mb-3">Preparation & Resourcing</h2>
+                    <p class="text-xs text-stone-500 leading-relaxed">Develop stabilization skills (Container, Safe Place, Resource Wheel) enhanced with slow BLS.</p>
+                </button>
+
+                <!-- Phase 3+ Card -->
+                <button onclick="app.showPhase('phase-3')" class="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl text-left hover:bg-zinc-800 hover:border-zinc-700 transition-all group">
+                    <i data-lucide="activity" class="w-8 h-8 text-zinc-500 group-hover:text-stone-300 mb-6 transition-colors"></i>
+                    <h3 class="text-[10px] uppercase tracking-widest font-bold text-zinc-500 mb-2">Phases 3 — 7</h3>
+                    <h2 class="text-xl font-serif text-stone-200 mb-3">Restricted Processing</h2>
+                    <p class="text-xs text-stone-500 leading-relaxed">Access the target, run BLS desensitization sets, install adaptive beliefs, and clear residual body tension.</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             PHASE 1: HISTORY & TARGETING TIMELINE
+             ========================================== -->
+        <div id="phase-1" class="hidden fade-in space-y-8 max-w-3xl mx-auto">
+            <header class="mb-10">
+                <button onclick="app.showDashboard()" class="text-[10px] uppercase tracking-widest font-bold text-zinc-500 hover:text-stone-300 mb-6 flex items-center gap-2"><i data-lucide="arrow-left" class="w-3 h-3"></i> Back to Dashboard</button>
+                <h1 class="text-3xl font-serif text-white mb-3">Phase 1: History & Targeting</h1>
+                <p class="text-xs text-zinc-500 uppercase tracking-widest font-bold">Chronological Schema Worksheet</p>
+            </header>
+
+            <div class="glass-card p-8 rounded-2xl space-y-6">
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-2 block">Presenting Issue</label>
+                    <input type="text" id="p1-issue" class="input-style" placeholder="What overarching problem brings you here?">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-red-400 mb-2 block">Dominant Negative Belief (NC)</label>
+                        <input type="text" id="p1-nc" class="input-style" placeholder="e.g., I am not safe, I am powerless...">
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-emerald-400 mb-2 block">Desired Adaptive Belief (PC)</label>
+                        <input type="text" id="p1-pc" class="input-style" placeholder="e.g., I can survive, I have choices...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-lg font-serif text-stone-200 mb-4 border-b border-zinc-800 pb-2">Chronological Timeline</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-zinc-900/50 p-6 rounded-xl border border-zinc-800">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-ethos-gold mb-2 block">Past Incidents</label>
+                        <textarea id="p1-past" class="input-style h-32 resize-none text-xs" placeholder="List past events related to the NC. &#10;&#10;Identify the earliest Touchstone memory here..."></textarea>
+                    </div>
+                    <div class="bg-zinc-900/50 p-6 rounded-xl border border-zinc-800">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-ethos-gold mb-2 block">Present Triggers</label>
+                        <textarea id="p1-present" class="input-style h-32 resize-none text-xs" placeholder="What triggers this feeling today?"></textarea>
+                    </div>
+                    <div class="bg-zinc-900/50 p-6 rounded-xl border border-zinc-800">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-ethos-gold mb-2 block">Future Anticipation</label>
+                        <textarea id="p1-future" class="input-style h-32 resize-none text-xs" placeholder="What future events cause anxiety based on this schema?"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6">
+                <button onclick="app.syncPhase1ToPhase3()" class="w-full bg-zinc-800 text-stone-200 font-bold uppercase tracking-widest text-xs py-4 rounded-xl hover:bg-zinc-700 transition-colors border border-zinc-700">
+                    Save & Pre-Fill Phase 3 Target
+                </button>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             PHASE 2: PREPARATION & RESOURCING
+             ========================================== -->
+        <div id="phase-2" class="hidden fade-in space-y-8 max-w-3xl mx-auto">
+            <header class="mb-10">
+                <button onclick="app.showDashboard()" class="text-[10px] uppercase tracking-widest font-bold text-zinc-500 hover:text-stone-300 mb-6 flex items-center gap-2"><i data-lucide="arrow-left" class="w-3 h-3"></i> Back to Dashboard</button>
+                <h1 class="text-3xl font-serif text-white mb-3">Phase 2: Preparation</h1>
+                <p class="text-xs text-zinc-500 uppercase tracking-widest font-bold">Stabilization & Resourcing</p>
+            </header>
+
+            <div class="space-y-6">
+                
+                <!-- The Container -->
+                <details class="group glass-card rounded-2xl overflow-hidden cursor-pointer" open>
+                    <summary class="p-6 flex justify-between items-center hover:bg-white/5 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <i data-lucide="box" class="w-5 h-5 text-zinc-400"></i>
+                            <h3 class="text-sm font-bold text-stone-200 uppercase tracking-widest">Developing A Container</h3>
+                        </div>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-500 group-open:rotate-180 transition-transform"></i>
+                    </summary>
+                    <div class="p-6 border-t border-zinc-800 space-y-6 cursor-default">
+                        <p class="text-xs text-stone-400 leading-relaxed italic">Design a container strong enough to hold disturbing material, with a two-way valve so things don't all come out at once.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[9px] uppercase font-bold text-zinc-500 mb-1 block">Container Description</label>
+                                <textarea id="p2-container-desc" class="input-style h-20 resize-none text-xs" placeholder="What does it look like? How strong is it?"></textarea>
+                            </div>
+                            <div>
+                                <label class="text-[9px] uppercase font-bold text-zinc-500 mb-1 block">Cue Word</label>
+                                <input type="text" id="p2-container-cue" class="input-style" placeholder="e.g., Vault, Lockbox...">
+                            </div>
+                        </div>
+                        <button onclick="app.runResourceBls('Focus on the feelings of safety as you lock the material in the container. Access your cue word.')" class="bg-ethos-gold/10 text-ethos-gold border border-ethos-gold/30 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-ethos-gold/20 transition-colors flex items-center gap-2">
+                            <i data-lucide="activity" class="w-3 h-3"></i> Enhance with Slow BLS
+                        </button>
+                    </div>
+                </details>
+
+                <!-- Calm/Safe Experience -->
+                <details class="group glass-card rounded-2xl overflow-hidden cursor-pointer">
+                    <summary class="p-6 flex justify-between items-center hover:bg-white/5 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <i data-lucide="sun" class="w-5 h-5 text-emerald-400/80"></i>
+                            <h3 class="text-sm font-bold text-stone-200 uppercase tracking-widest">Calm / Safe Experience</h3>
+                        </div>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-500 group-open:rotate-180 transition-transform"></i>
+                    </summary>
+                    <div class="p-6 border-t border-zinc-800 space-y-6 cursor-default">
+                        <p class="text-xs text-stone-400 leading-relaxed italic">Imagine a place or experience where you feel completely calm and relaxed. Notice the sensory details.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[9px] uppercase font-bold text-emerald-500/70 mb-1 block">Sensory Details</label>
+                                <textarea id="p2-calm-desc" class="input-style h-20 resize-none text-xs" placeholder="Images, smells, sounds, sensations..."></textarea>
+                            </div>
+                            <div>
+                                <label class="text-[9px] uppercase font-bold text-emerald-500/70 mb-1 block">Cue Word</label>
+                                <input type="text" id="p2-calm-cue" class="input-style" placeholder="e.g., Beach, Forest, Peace...">
+                            </div>
+                        </div>
+                        <button onclick="app.runResourceBls('Notice the positive physical sensations of your calm place. Repeat your cue word.')" class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-emerald-500/20 transition-colors flex items-center gap-2">
+                            <i data-lucide="activity" class="w-3 h-3"></i> Enhance with Slow BLS
+                        </button>
+                    </div>
+                </details>
+
+                <!-- Wheel of Fortunate Resources -->
+                <details class="group glass-card rounded-2xl overflow-hidden cursor-pointer">
+                    <summary class="p-6 flex justify-between items-center hover:bg-white/5 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <i data-lucide="circle-dashed" class="w-5 h-5 text-indigo-400/80"></i>
+                            <h3 class="text-sm font-bold text-stone-200 uppercase tracking-widest">Wheel of Fortunate Resources</h3>
+                        </div>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-500 group-open:rotate-180 transition-transform"></i>
+                    </summary>
+                    <div class="p-6 border-t border-zinc-800 space-y-6 cursor-default text-center">
+                        <p class="text-xs text-stone-400 leading-relaxed italic mb-6">List internal and external resources that provide you strength, grounded around an adaptive belief of self.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
+                            <!-- Top/Left -->
+                            <div class="space-y-3">
+                                <input type="text" id="p2-w1" class="input-style text-center text-xs" placeholder="Resource 1 (e.g. Spouse)">
+                                <input type="text" id="p2-w2" class="input-style text-center text-xs" placeholder="Resource 2 (e.g. Humor)">
+                                <input type="text" id="p2-w3" class="input-style text-center text-xs" placeholder="Resource 3">
+                            </div>
+                            <!-- Center -->
+                            <div class="flex flex-col justify-center">
+                                <label class="text-[9px] uppercase font-bold text-indigo-400 mb-2 block">Adaptive Belief of Self</label>
+                                <textarea id="p2-w-center" class="input-style text-center text-sm font-serif h-24 resize-none border-indigo-500/30 bg-indigo-950/20" placeholder="I am resilient..."></textarea>
+                            </div>
+                            <!-- Bottom/Right -->
+                            <div class="space-y-3">
+                                <input type="text" id="p2-w4" class="input-style text-center text-xs" placeholder="Resource 4">
+                                <input type="text" id="p2-w5" class="input-style text-center text-xs" placeholder="Resource 5">
+                                <input type="text" id="p2-w6" class="input-style text-center text-xs" placeholder="Resource 6">
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex justify-center">
+                            <button onclick="app.runResourceBls('View your entire wheel of resources. Focus on your adaptive belief of self.')" class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-indigo-500/20 transition-colors flex items-center gap-2">
+                                <i data-lucide="activity" class="w-3 h-3"></i> Enhance Wheel (Slow BLS)
+                            </button>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             PHASE 3: ACCESSING & ACTIVATING
+             ========================================== -->
+        <div id="phase-3" class="hidden fade-in space-y-8 max-w-3xl mx-auto">
+            <header class="mb-10 text-center relative">
+                <button onclick="app.showDashboard()" class="absolute left-0 top-2 text-[10px] uppercase tracking-widest font-bold text-zinc-500 hover:text-stone-300 flex items-center gap-2"><i data-lucide="arrow-left" class="w-3 h-3"></i> Back</button>
+                <h1 class="text-3xl font-serif text-white mb-3">Target Access & Activation</h1>
+                <p class="text-xs text-zinc-500 uppercase tracking-widest font-bold">Restricted Processing Protocol (EMD)</p>
+            </header>
+
+            <div class="glass-card p-8 rounded-2xl space-y-6">
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest font-bold text-ethos-gold mb-2 block">1. The Target Incident</label>
+                    <input type="text" id="p3-target" class="input-style" placeholder="Name the specific incident you are working on today...">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest font-bold text-ethos-gold mb-2 block">2. The Worst Part</label>
+                    <input type="text" id="p3-worst" class="input-style" placeholder="What image or moment represents the worst part of the incident?">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-card p-8 rounded-2xl space-y-6">
+                    <div>
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-red-400 mb-2 block">3. Negative Belief (NC)</label>
+                        <select id="p3-nc" class="input-style cursor-pointer text-stone-400">
+                            <option value="">Select core belief schema...</option>
+                            <option value="I am powerless / helpless">I am powerless / helpless</option>
+                            <option value="I am unlovable / defective">I am unlovable / defective</option>
+                            <option value="I am abandoned / alone">I am abandoned / alone</option>
+                            <option value="I am in danger">I am in danger</option>
+                            <option value="I should have done something">I should have done something</option>
+                            <option value="Other">Other (Type below)</option>
+                        </select>
+                        <input type="text" id="p3-nc-custom" class="input-style mt-2 hidden" placeholder="Enter custom negative belief...">
+                    </div>
+                </div>
+
+                <div class="glass-card p-8 rounded-2xl space-y-6">
+                    <div>
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-emerald-400 mb-2 block">4. Positive Belief (PC)</label>
+                        <input type="text" id="p3-pc" class="input-style" placeholder="e.g., I can survive, I am okay as I am, I did my best...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-8 rounded-2xl space-y-8">
+                <div>
+                    <div class="flex justify-between items-end mb-4">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-zinc-400 block">5. Validity of Cognition (VoC)</label>
+                        <span class="text-xs text-stone-400 italic">How true does the PC feel right now?</span>
+                    </div>
+                    <input type="range" id="p3-voc" min="1" max="7" value="1" class="w-full" oninput="document.getElementById('voc-val').innerText = this.value">
+                    <div class="flex justify-between text-[10px] font-bold text-zinc-600 mt-2 uppercase">
+                        <span>1 (Totally False)</span>
+                        <span id="voc-val" class="text-ethos-gold text-sm">1</span>
+                        <span>7 (Totally True)</span>
+                    </div>
+                </div>
+
+                <hr class="border-zinc-800">
+
+                <div>
+                    <div class="flex justify-between items-end mb-4">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-zinc-400 block">6. Subjective Units of Disturbance (SUD)</label>
+                        <span class="text-xs text-stone-400 italic">How disturbing is it now?</span>
+                    </div>
+                    <input type="range" id="p3-sud" min="0" max="10" value="7" class="w-full" oninput="document.getElementById('sud-val').innerText = this.value">
+                    <div class="flex justify-between text-[10px] font-bold text-zinc-600 mt-2 uppercase">
+                        <span>0 (Neutral)</span>
+                        <span id="sud-val" class="text-red-400 text-sm">7</span>
+                        <span>10 (Highest)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-8 rounded-2xl">
+                <label class="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-2 block">7. Body Location</label>
+                <input type="text" id="p3-body" class="input-style" placeholder="Where do you feel this disturbance in your body?">
+            </div>
+
+            <div class="pt-6">
+                <button onclick="app.startPhase4()" class="w-full bg-zinc-100 text-black font-bold uppercase tracking-widest text-xs py-5 rounded-xl hover:bg-ethos-gold transition-colors flex items-center justify-center gap-3">
+                    Begin Processing (Phase 4) <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             PHASE 4/RESOURCING: BLS ACTIVE SCREEN (Hidden)
+             ========================================== -->
+        <div id="phase-4-bls" class="hidden fixed inset-0 z-[100] bg-ethos-dark flex flex-col items-center justify-center">
+            
+            <div class="absolute top-16 text-center w-full px-6">
+                <span class="text-[10px] uppercase tracking-[0.4em] text-ethos-gold font-bold block mb-4" id="bls-instruction">
+                    Focus on the incident and where you feel it.
+                </span>
+                <p class="text-xl font-serif italic text-stone-400" id="bls-target-display"></p>
+            </div>
+
+            <!-- Audio Toggle Button -->
+            <button id="audio-toggle-btn" onclick="app.toggleAudio()" class="absolute top-40 px-4 py-2 border border-zinc-700 bg-zinc-900/50 rounded-full text-[10px] uppercase tracking-widest font-bold text-zinc-400 hover:text-ethos-gold hover:border-ethos-gold/50 transition-all flex items-center gap-2">
+                <i data-lucide="headphones" class="w-4 h-4"></i>
+                <span id="audio-toggle-text">Enable Audio BLS</span>
+            </button>
+
+            <!-- Bilateral Ball -->
+            <div class="w-full relative flex items-center justify-center h-32 mt-12">
+                <div class="w-8 h-8 bg-ethos-gold rounded-full shadow-[0_0_40px_rgba(197,160,89,0.8)] bilateral-ball" id="stim-ball"></div>
+            </div>
+
+            <div class="absolute bottom-16">
+                <button onclick="app.stopBlsEarly()" class="w-24 h-24 rounded-full border border-red-500/30 bg-red-950/20 text-red-400 font-bold text-[10px] uppercase tracking-widest flex flex-col items-center justify-center gap-2 hover:bg-red-900/40 transition-colors">
+                    <i data-lucide="hand" class="w-6 h-6"></i>
+                    Stop Signal
+                </button>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             PHASE 4: SUD CHECK (Hidden)
+             ========================================== -->
+        <div id="phase-4-check" class="hidden fade-in space-y-8 mt-12 max-w-2xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-serif text-white italic mb-4">Take a breath, let it go.</h2>
+                <p class="text-sm text-stone-400" id="check-prompt">As you think of the incident, how disturbing is it now?</p>
+            </div>
+
+            <div class="glass-card p-10 rounded-2xl mx-auto space-y-10">
+                
+                <div id="reflection-container" class="hidden space-y-4 pb-8 border-b border-zinc-800">
+                    <label class="text-[10px] uppercase tracking-widest font-bold text-ethos-gold block">What is different about the incident now?</label>
+                    <textarea id="p4-reflection" class="input-style resize-none h-24 text-lg" placeholder="Just notice what has shifted..."></textarea>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-end mb-6">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-zinc-400 block">Current SUD Level</label>
+                        <span id="current-sud-val" class="text-2xl font-serif text-white"></span>
+                    </div>
+                    <input type="range" id="p4-current-sud" min="0" max="10" value="7" class="w-full" oninput="document.getElementById('current-sud-val').innerText = this.value">
+                    <div class="flex justify-between text-[10px] font-bold text-zinc-600 mt-4 uppercase">
+                        <span>0 (Neutral)</span>
+                        <span>10 (Highest)</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                    <button onclick="app.runBlsSet()" class="bg-zinc-800 text-stone-200 font-bold uppercase tracking-widest text-[10px] py-4 rounded-xl hover:bg-zinc-700 transition-colors border border-zinc-700">
+                        Continue BLS (Go with that)
+                    </button>
+                    <button onclick="app.checkPhase5()" class="bg-transparent border border-ethos-gold/50 text-ethos-gold font-bold uppercase tracking-widest text-[10px] py-4 rounded-xl hover:bg-ethos-gold/10 transition-colors">
+                        Move to Installation
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             PHASE 5: INSTALLATION (Hidden)
+             ========================================== -->
+        <div id="phase-5" class="hidden fade-in space-y-8 mt-12 max-w-2xl mx-auto">
+            <header class="mb-10 text-center">
+                <h1 class="text-3xl font-serif text-white mb-3">Phase 5: Installation</h1>
+                <p class="text-xs text-zinc-500 uppercase tracking-widest font-bold">Strengthening the Adaptive Belief</p>
+            </header>
+
+            <div class="glass-card p-10 rounded-2xl text-center space-y-8">
+                <div>
+                    <span class="text-[10px] uppercase tracking-widest font-bold text-zinc-600 block mb-2">Hold the incident and this belief together:</span>
+                    <h3 class="text-2xl font-serif text-emerald-400 italic" id="p5-pc-display"></h3>
+                </div>
+
+                <div class="pt-8 border-t border-zinc-800">
+                    <div class="flex justify-between items-end mb-6 text-left">
+                        <label class="text-[10px] uppercase tracking-widest font-bold text-zinc-400 block">How true does it feel now (VoC)?</label>
+                        <span id="p5-voc-val" class="text-2xl font-serif text-white"></span>
+                    </div>
+                    <input type="range" id="p5-voc" min="1" max="7" value="1" class="w-full" oninput="document.getElementById('p5-voc-val').innerText = this.value">
+                    <div class="flex justify-between text-[10px] font-bold text-zinc-600 mt-4 uppercase">
+                        <span>1 (Totally False)</span>
+                        <span>7 (Totally True)</span>
+                    </div>
+                </div>
+
+                <div class="pt-6">
+                    <button onclick="app.runInstallationBls()" class="w-full bg-emerald-950/40 text-emerald-400 font-bold uppercase tracking-widest text-[10px] py-4 rounded-xl border border-emerald-900/50 hover:bg-emerald-900/60 transition-colors">
+                        Process (Go with that)
+                    </button>
+                </div>
+                
+                <div id="p5-blocker-q" class="hidden text-left pt-6 border-t border-zinc-800 space-y-4">
+                    <p class="text-xs text-stone-400 italic">If it is not reaching a 7: What keeps this from going to a 7? What is the worst thing that would happen if it did?</p>
+                    <textarea id="p5-blocker" class="input-style resize-none h-20 text-sm" placeholder="Reflect here..."></textarea>
+                </div>
+                
+                <button onclick="app.startPhase6()" class="text-[10px] text-zinc-500 hover:text-stone-300 uppercase tracking-widest font-bold mt-4">
+                    Proceed to Body Scan →
+                </button>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             PHASE 6: BODY SCAN (Hidden)
+             ========================================== -->
+        <div id="phase-6" class="hidden fade-in space-y-8 mt-12 max-w-2xl mx-auto">
+            <header class="mb-10 text-center">
+                <h1 class="text-3xl font-serif text-white mb-3">Phase 6: Body Scan</h1>
+                <p class="text-xs text-zinc-500 uppercase tracking-widest font-bold">Clearing Residual Tension</p>
+            </header>
+
+            <div class="glass-card p-10 rounded-2xl text-center space-y-8">
+                <p class="text-lg text-stone-300 font-serif leading-relaxed italic">
+                    "As you think of the event and your positive belief, scan your body from head to toe and notice if you are experiencing any tension or disturbance."
+                </p>
+
+                <div class="grid grid-cols-1 gap-4 pt-6">
+                    <button onclick="app.runBodyScanBls()" class="bg-zinc-800 text-stone-200 font-bold uppercase tracking-widest text-[10px] py-4 rounded-xl hover:bg-zinc-700 transition-colors border border-zinc-700">
+                        I feel tension (Process sensation)
+                    </button>
+                    <button onclick="app.endSession()" class="bg-transparent border border-ethos-gold/50 text-ethos-gold font-bold uppercase tracking-widest text-[10px] py-4 rounded-xl hover:bg-ethos-gold/10 transition-colors">
+                        My body is neutral / relaxed
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             PHASE 7: CLOSURE (Hidden)
+             ========================================== -->
+        <div id="phase-7" class="hidden fade-in space-y-8 mt-12 text-center max-w-2xl mx-auto">
+            <i data-lucide="shield-check" class="w-16 h-16 text-emerald-500 mx-auto mb-6"></i>
+            <h1 class="text-4xl font-serif text-white mb-4">Session Complete</h1>
+            <p class="text-sm text-stone-400 max-w-md mx-auto leading-relaxed">
+                Processing will continue after the session. Make note of any new insights, dreams, or reactions to triggers over the coming days.
+            </p>
+            <button onclick="app.clearData()" class="mt-8 text-[10px] text-zinc-500 hover:text-stone-300 uppercase tracking-widest font-bold border-b border-zinc-700 pb-1">
+                Save & Return to Dashboard
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Session Logs Modal -->
+    <div id="logs-modal" class="hidden fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl overflow-y-auto pt-24 pb-20 px-6">
+        <div class="max-w-3xl mx-auto">
+            <div class="flex justify-between items-center mb-10 border-b border-zinc-800 pb-6">
+                <div>
+                    <h2 class="text-3xl font-serif text-white mb-2">Session History</h2>
+                    <p class="text-xs text-zinc-500 uppercase tracking-widest font-bold">Past Targets & Reflections</p>
+                </div>
+                <div class="flex items-center gap-6">
+                    <button onclick="app.clearHistory()" class="text-[10px] uppercase tracking-widest font-bold text-red-500/50 hover:text-red-400 transition-colors">Clear All History</button>
+                    <button onclick="app.hideLogs()" class="text-zinc-500 hover:text-white transition-colors bg-zinc-900 p-2 rounded-full border border-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+            </div>
+            <div id="logs-container" class="space-y-6">
+                <!-- Logs injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const app = {
+            data: {
+                target: '', worst: '', nc: '', pc: '',
+                vocInitial: 1, sudInitial: 10,
+                setCount: 0,
+                blsTimer: null,
+                isResourcingMode: false // Tracks if we are in Phase 2 slow BLS mode
+            },
+            audio: {
+                enabled: false,
+                ctx: null,
+                interval: null,
+                isLeft: true
+            },
+
+            init() {
+                lucide.createIcons();
+                this.loadData();
+                this.setupAutoSave();
+
+                // Handle Custom NC select in Phase 3
+                document.getElementById('p3-nc').addEventListener('change', function(e) {
+                    const customInput = document.getElementById('p3-nc-custom');
+                    if(e.target.value === 'Other') {
+                        customInput.classList.remove('hidden');
+                    } else {
+                        customInput.classList.add('hidden');
+                    }
+                });
+
+                // Default view
+                this.showDashboard();
+            },
+
+            // --- Navigation & View Management ---
+            hideAll() {
+                ['home-dashboard', 'phase-1', 'phase-2', 'phase-3', 'phase-4-bls', 'phase-4-check', 'phase-5', 'phase-6', 'phase-7'].forEach(id => {
+                    document.getElementById(id).classList.add('hidden');
+                });
+            },
+
+            updateNav(text) {
+                document.getElementById('nav-phase-label').innerText = text;
+            },
+
+            showDashboard() {
+                this.stopAudioBls();
+                clearTimeout(this.data.blsTimer);
+                this.hideAll();
+                document.getElementById('home-dashboard').classList.remove('hidden');
+                this.updateNav('System Dashboard');
+            },
+
+            showPhase(phaseId) {
+                this.hideAll();
+                document.getElementById(phaseId).classList.remove('hidden');
+                
+                if(phaseId === 'phase-1') this.updateNav('Phase 1: History & Targeting');
+                if(phaseId === 'phase-2') this.updateNav('Phase 2: Preparation');
+                if(phaseId === 'phase-3') this.updateNav('Phase 3: Accessing');
+                
+                window.scrollTo(0, 0);
+            },
+
+            syncPhase1ToPhase3() {
+                // Pull data from Phase 1 to Phase 3 inputs
+                const nc = document.getElementById('p1-nc').value;
+                const pc = document.getElementById('p1-pc').value;
+                const past = document.getElementById('p1-past').value;
+
+                if(nc) document.getElementById('p3-nc-custom').value = nc;
+                if(pc) document.getElementById('p3-pc').value = pc;
+                
+                // If they entered past touchstones, suggest it as the target
+                if(past) {
+                    // Extract first line or summary as a suggestion
+                    const firstLine = past.split('\n')[0].substring(0, 50);
+                    if(firstLine && !document.getElementById('p3-target').value) {
+                         document.getElementById('p3-target').value = firstLine + "...";
+                    }
+                }
+                
+                // Force custom dropdown selection if needed
+                if(nc) {
+                    document.getElementById('p3-nc').value = 'Other';
+                    document.getElementById('p3-nc-custom').classList.remove('hidden');
+                }
+
+                this.saveData();
+                this.showPhase('phase-3');
+            },
+
+            // --- Web Audio API for Bilateral Stimulation ---
+            toggleAudio() {
+                this.audio.enabled = !this.audio.enabled;
+                const btn = document.getElementById('audio-toggle-btn');
+                const text = document.getElementById('audio-toggle-text');
+                
+                if (this.audio.enabled) {
+                    btn.classList.add('border-ethos-gold', 'text-ethos-gold');
+                    btn.classList.remove('border-zinc-700', 'text-zinc-400');
+                    text.innerText = "Audio Enabled (Use Headphones)";
+                    
+                    if (!this.audio.ctx) {
+                        this.audio.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    if (this.audio.ctx.state === 'suspended') {
+                        this.audio.ctx.resume();
+                    }
+                } else {
+                    btn.classList.remove('border-ethos-gold', 'text-ethos-gold');
+                    btn.classList.add('border-zinc-700', 'text-zinc-400');
+                    text.innerText = "Enable Audio BLS";
+                    this.stopAudioBls();
+                }
+            },
+
+            playBilateralTone() {
+                if (!this.audio.ctx || !this.audio.enabled) return;
+                
+                const osc = this.audio.ctx.createOscillator();
+                const gainNode = this.audio.ctx.createGain();
+                const panner = this.audio.ctx.createStereoPanner();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(432, this.audio.ctx.currentTime); 
+                
+                panner.pan.value = this.audio.isLeft ? -1 : 1;
+                this.audio.isLeft = !this.audio.isLeft;
+
+                gainNode.gain.setValueAtTime(0, this.audio.ctx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.15, this.audio.ctx.currentTime + 0.05); 
+                gainNode.gain.linearRampToValueAtTime(0, this.audio.ctx.currentTime + 0.2); 
+
+                osc.connect(gainNode);
+                gainNode.connect(panner);
+                panner.connect(this.audio.ctx.destination);
+
+                osc.start();
+                osc.stop(this.audio.ctx.currentTime + 0.25);
+            },
+
+            startAudioBls(speed = 'fast') {
+                if (!this.audio.enabled) return;
+                
+                // Fast = Processing (1.2s sweep -> 600ms tap)
+                // Slow = Resourcing (4s sweep -> 2000ms tap)
+                const intervalMs = speed === 'slow' ? 2000 : 600;
+
+                this.audio.isLeft = true; 
+                this.playBilateralTone(); 
+                this.audio.interval = setInterval(() => {
+                    this.playBilateralTone();
+                }, intervalMs);
+            },
+
+            stopAudioBls() {
+                if (this.audio.interval) {
+                    clearInterval(this.audio.interval);
+                    this.audio.interval = null;
+                }
+            },
+
+            // --- Save/Load System ---
+            setupAutoSave() {
+                const inputs = document.querySelectorAll('input, select, textarea');
+                inputs.forEach(input => {
+                    input.addEventListener('input', () => this.saveData());
+                    input.addEventListener('change', () => this.saveData());
+                });
+            },
+
+            saveData() {
+                const sessionData = {
+                    // Phase 1
+                    issue: document.getElementById('p1-issue').value,
+                    p1_nc: document.getElementById('p1-nc').value,
+                    p1_pc: document.getElementById('p1-pc').value,
+                    past: document.getElementById('p1-past').value,
+                    present: document.getElementById('p1-present').value,
+                    future: document.getElementById('p1-future').value,
+                    
+                    // Phase 2
+                    containerDesc: document.getElementById('p2-container-desc').value,
+                    containerCue: document.getElementById('p2-container-cue').value,
+                    calmDesc: document.getElementById('p2-calm-desc').value,
+                    calmCue: document.getElementById('p2-calm-cue').value,
+                    w1: document.getElementById('p2-w1').value,
+                    w2: document.getElementById('p2-w2').value,
+                    w3: document.getElementById('p2-w3').value,
+                    w4: document.getElementById('p2-w4').value,
+                    w5: document.getElementById('p2-w5').value,
+                    w6: document.getElementById('p2-w6').value,
+                    wCenter: document.getElementById('p2-w-center').value,
+
+                    // Phase 3-7
+                    target: document.getElementById('p3-target').value,
+                    worst: document.getElementById('p3-worst').value,
+                    nc: document.getElementById('p3-nc').value,
+                    ncCustom: document.getElementById('p3-nc-custom').value,
+                    pc: document.getElementById('p3-pc').value,
+                    vocInitial: document.getElementById('p3-voc').value,
+                    sudInitial: document.getElementById('p3-sud').value,
+                    body: document.getElementById('p3-body').value,
+                    currentSud: document.getElementById('p4-current-sud')?.value || 7,
+                    currentVoc: document.getElementById('p5-voc')?.value || 1,
+                    reflectionText: document.getElementById('p4-reflection')?.value || '',
+                    blockerText: document.getElementById('p5-blocker')?.value || ''
+                };
+                localStorage.setItem('emdrSessionData', JSON.stringify(sessionData));
+            },
+
+            loadData() {
+                const saved = localStorage.getItem('emdrSessionData');
+                if (saved) {
+                    try {
+                        const sessionData = JSON.parse(saved);
+                        
+                        // Phase 1 Map
+                        const p1Map = ['issue', 'p1_nc', 'p1_pc', 'past', 'present', 'future'];
+                        p1Map.forEach(key => { if(document.getElementById(`p1-${key}`) && sessionData[key]) document.getElementById(`p1-${key}`).value = sessionData[key]; });
+                        // Hack for id mismatch: p1_nc -> p1-nc
+                        if(sessionData.p1_nc) document.getElementById('p1-nc').value = sessionData.p1_nc;
+                        if(sessionData.p1_pc) document.getElementById('p1-pc').value = sessionData.p1_pc;
+
+                        // Phase 2 Map
+                        const p2Map = { 'containerDesc': 'p2-container-desc', 'containerCue': 'p2-container-cue', 'calmDesc': 'p2-calm-desc', 'calmCue': 'p2-calm-cue', 'w1': 'p2-w1', 'w2': 'p2-w2', 'w3': 'p2-w3', 'w4': 'p2-w4', 'w5': 'p2-w5', 'w6': 'p2-w6', 'wCenter': 'p2-w-center' };
+                        for(let key in p2Map) { if(sessionData[key]) document.getElementById(p2Map[key]).value = sessionData[key]; }
+
+                        // Phase 3 Map
+                        document.getElementById('p3-target').value = sessionData.target || '';
+                        document.getElementById('p3-worst').value = sessionData.worst || '';
+                        document.getElementById('p3-nc').value = sessionData.nc || '';
+                        document.getElementById('p3-nc-custom').value = sessionData.ncCustom || '';
+                        document.getElementById('p3-pc').value = sessionData.pc || '';
+                        document.getElementById('p3-body').value = sessionData.body || '';
+
+                        if (sessionData.vocInitial) { document.getElementById('p3-voc').value = sessionData.vocInitial; document.getElementById('voc-val').innerText = sessionData.vocInitial; }
+                        if (sessionData.sudInitial) { document.getElementById('p3-sud').value = sessionData.sudInitial; document.getElementById('sud-val').innerText = sessionData.sudInitial; }
+                        if (sessionData.currentSud && document.getElementById('p4-current-sud')) { document.getElementById('p4-current-sud').value = sessionData.currentSud; document.getElementById('current-sud-val').innerText = sessionData.currentSud; }
+                        if (sessionData.currentVoc && document.getElementById('p5-voc')) { document.getElementById('p5-voc').value = sessionData.currentVoc; document.getElementById('p5-voc-val').innerText = sessionData.currentVoc; }
+                        if (document.getElementById('p4-reflection')) document.getElementById('p4-reflection').value = sessionData.reflectionText || '';
+                        if (document.getElementById('p5-blocker')) document.getElementById('p5-blocker').value = sessionData.blockerText || '';
+                        if (sessionData.nc === 'Other') document.getElementById('p3-nc-custom').classList.remove('hidden');
+                        
+                    } catch(e) {
+                        console.error("Error loading session data", e);
+                    }
+                }
+            },
+
+            // --- Phase 2 Resourcing BLS ---
+            runResourceBls(instruction) {
+                this.data.isResourcingMode = true;
+                this.hideAll();
+                this.updateNav('Phase 2: Resourcing BLS');
+                
+                const blsScreen = document.getElementById('phase-4-bls');
+                blsScreen.classList.remove('hidden');
+                
+                document.getElementById('bls-instruction').innerText = instruction;
+                document.getElementById('bls-target-display').innerText = "";
+
+                // Slow down visual CSS
+                document.getElementById('stim-ball').classList.add('slow-mode');
+
+                this.startAudioBls('slow');
+
+                // Resourcing sets are slightly longer to allow soaking in the positive affect
+                const blsDurationMs = 20000; 
+                
+                clearTimeout(this.data.blsTimer);
+                this.data.blsTimer = setTimeout(() => {
+                    this.stopBlsEarly();
+                }, blsDurationMs);
+            },
+
+            // --- Phase 3 to Phase 4 ---
+            startPhase4() {
+                this.data.target = document.getElementById('p3-target').value || 'The incident';
+                this.data.worst = document.getElementById('p3-worst').value;
+                const selectNc = document.getElementById('p3-nc').value;
+                this.data.nc = selectNc === 'Other' ? document.getElementById('p3-nc-custom').value : selectNc;
+                this.data.pc = document.getElementById('p3-pc').value;
+                this.data.sudInitial = document.getElementById('p3-sud').value;
+                
+                document.getElementById('p4-current-sud').value = this.data.sudInitial;
+                document.getElementById('current-sud-val').innerText = this.data.sudInitial;
+
+                this.data.setCount = 0;
+                this.runBlsSet('Focus on the incident, those negative words, and where you feel it in your body.');
+            },
+
+            // --- Core Processing BLS (Fast Mode) ---
+            runBlsSet(instructionOverride = null) {
+                this.data.isResourcingMode = false;
+                this.hideAll();
+                this.updateNav('Phase 4: Desensitization');
+                
+                const blsScreen = document.getElementById('phase-4-bls');
+                blsScreen.classList.remove('hidden');
+                
+                document.getElementById('bls-instruction').innerText = instructionOverride || "Go with that.";
+                document.getElementById('bls-target-display').innerText = `"${this.data.target}"`;
+
+                // Standard processing speed
+                document.getElementById('stim-ball').classList.remove('slow-mode');
+                this.startAudioBls('fast');
+
+                // EMD protocol uses rapid, brief sets (10-15 seconds)
+                const blsDurationMs = 12000; 
+                
+                clearTimeout(this.data.blsTimer);
+                this.data.blsTimer = setTimeout(() => {
+                    this.endBlsSet();
+                }, blsDurationMs);
+            },
+
+            stopBlsEarly() {
+                clearTimeout(this.data.blsTimer);
+                
+                if(this.data.isResourcingMode) {
+                    this.stopAudioBls();
+                    this.showPhase('phase-2');
+                } else {
+                    this.endBlsSet();
+                }
+            },
+
+            endBlsSet() {
+                this.stopAudioBls(); 
+                
+                this.data.setCount++;
+                this.hideAll();
+                const checkScreen = document.getElementById('phase-4-check');
+                checkScreen.classList.remove('hidden');
+
+                const reflectBox = document.getElementById('reflection-container');
+                if (this.data.setCount % 4 === 0) {
+                    reflectBox.classList.remove('hidden');
+                    document.getElementById('check-prompt').innerText = "What is different about the incident now? And how disturbing is it?";
+                } else {
+                    reflectBox.classList.add('hidden');
+                    document.getElementById('check-prompt').innerText = "As you think of the incident, how disturbing is it now?";
+                }
+            },
+
+            checkPhase5() {
+                const currentSud = document.getElementById('p4-current-sud').value;
+                this.startPhase5();
+            },
+
+            startPhase5() {
+                this.hideAll();
+                this.updateNav('Phase 5: Installation');
+                document.getElementById('phase-5').classList.remove('hidden');
+                document.getElementById('p5-pc-display').innerText = `"${this.data.pc || 'Adaptive Belief'}"`;
+                
+                const initialVoc = document.getElementById('p3-voc').value;
+                document.getElementById('p5-voc').value = initialVoc;
+                document.getElementById('p5-voc-val').innerText = initialVoc;
+            },
+
+            runInstallationBls() {
+                this.data.isResourcingMode = false;
+                this.hideAll();
+                const blsScreen = document.getElementById('phase-4-bls');
+                blsScreen.classList.remove('hidden');
+                
+                document.getElementById('bls-instruction').innerText = "Hold the incident and the positive belief together.";
+                document.getElementById('bls-target-display').innerText = `"${this.data.pc}"`;
+
+                document.getElementById('stim-ball').classList.remove('slow-mode');
+                this.startAudioBls('fast');
+
+                clearTimeout(this.data.blsTimer);
+                this.data.blsTimer = setTimeout(() => {
+                    this.stopAudioBls();
+                    this.hideAll();
+                    document.getElementById('phase-5').classList.remove('hidden');
+                    document.getElementById('p5-blocker-q').classList.remove('hidden');
+                }, 12000);
+            },
+
+            startPhase6() {
+                this.hideAll();
+                this.updateNav('Phase 6: Body Scan');
+                document.getElementById('phase-6').classList.remove('hidden');
+            },
+
+            runBodyScanBls() {
+                this.data.isResourcingMode = false;
+                this.hideAll();
+                const blsScreen = document.getElementById('phase-4-bls');
+                blsScreen.classList.remove('hidden');
+                
+                document.getElementById('bls-instruction').innerText = "Focus on that body sensation and follow the light.";
+                document.getElementById('bls-target-display').innerText = "";
+
+                document.getElementById('stim-ball').classList.remove('slow-mode');
+                this.startAudioBls('fast');
+
+                clearTimeout(this.data.blsTimer);
+                this.data.blsTimer = setTimeout(() => {
+                    this.stopAudioBls();
+                    this.hideAll();
+                    document.getElementById('phase-6').classList.remove('hidden');
+                }, 12000);
+            },
+
+            endSession() {
+                this.hideAll();
+                this.updateNav('Phase 7: Closure');
+                document.getElementById('phase-7').classList.remove('hidden');
+            },
+
+            // --- History Logs ---
+            logSession() {
+                const saved = localStorage.getItem('emdrSessionData');
+                if (!saved) return;
+                
+                const sessionData = JSON.parse(saved);
+                if (!sessionData.target || sessionData.target.trim() === '') return;
+
+                sessionData.date = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+                
+                let history = JSON.parse(localStorage.getItem('emdrSessionHistory') || '[]');
+                history.unshift(sessionData); 
+                localStorage.setItem('emdrSessionHistory', JSON.stringify(history));
+            },
+
+            showLogs() {
+                const history = JSON.parse(localStorage.getItem('emdrSessionHistory') || '[]');
+                const container = document.getElementById('logs-container');
+                
+                if (history.length === 0) {
+                    container.innerHTML = '<div class="glass-card p-10 rounded-2xl text-center text-zinc-500 italic">No past sessions found in this browser.</div>';
+                } else {
+                    container.innerHTML = history.map(session => `
+                        <div class="glass-card p-8 rounded-2xl border border-zinc-800 fade-in">
+                            <div class="flex justify-between items-start mb-6 border-b border-zinc-800 pb-4">
+                                <div>
+                                    <span class="text-[10px] uppercase tracking-widest text-ethos-gold font-bold block mb-1">Target Incident</span>
+                                    <h3 class="text-xl font-serif text-stone-200">"${session.target}"</h3>
+                                </div>
+                                <span class="text-[10px] uppercase tracking-widest text-zinc-500 bg-zinc-900 px-3 py-1 rounded">${session.date}</span>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <span class="text-[9px] uppercase tracking-widest font-bold text-red-400/70 block mb-1">Negative Belief (NC)</span>
+                                    <p class="text-sm text-stone-300">${session.nc === 'Other' ? session.ncCustom : session.nc}</p>
+                                </div>
+                                <div>
+                                    <span class="text-[9px] uppercase tracking-widest font-bold text-emerald-400/70 block mb-1">Positive Belief (PC)</span>
+                                    <p class="text-sm text-stone-300">${session.pc}</p>
+                                </div>
+                                <div>
+                                    <span class="text-[9px] uppercase tracking-widest font-bold text-zinc-500 block mb-1">Disturbance (SUD)</span>
+                                    <p class="text-sm text-stone-300">Started at <span class="text-red-400 font-bold">${session.sudInitial}</span> → Ended at <span class="text-ethos-gold font-bold">${session.currentSud}</span></p>
+                                </div>
+                                <div>
+                                    <span class="text-[9px] uppercase tracking-widest font-bold text-zinc-500 block mb-1">Belief Validity (VoC)</span>
+                                    <p class="text-sm text-stone-300">Started at <span class="text-zinc-400 font-bold">${session.vocInitial}</span> → Ended at <span class="text-emerald-400 font-bold">${session.currentVoc}</span></p>
+                                </div>
+                            </div>
+
+                            ${session.reflectionText || session.blockerText ? `
+                                <div class="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800 mt-4 space-y-4">
+                                    ${session.reflectionText ? `
+                                    <div>
+                                        <span class="text-[9px] uppercase tracking-widest font-bold text-ethos-gold block mb-1">Processing Notes</span>
+                                        <p class="text-xs text-stone-400 italic">"${session.reflectionText}"</p>
+                                    </div>` : ''}
+                                    ${session.blockerText ? `
+                                    <div>
+                                        <span class="text-[9px] uppercase tracking-widest font-bold text-zinc-500 block mb-1">Installation Blockers</span>
+                                        <p class="text-xs text-stone-400 italic">"${session.blockerText}"</p>
+                                    </div>` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('');
+                }
+                
+                document.getElementById('logs-modal').classList.remove('hidden');
+                lucide.createIcons();
+            },
+
+            hideLogs() {
+                document.getElementById('logs-modal').classList.add('hidden');
+            },
+            
+            clearHistory() {
+                if(confirm("Are you sure you want to delete all past session logs? This cannot be undone.")) {
+                    localStorage.removeItem('emdrSessionHistory');
+                    this.showLogs();
+                }
+            },
+
+            clearData() {
+                this.logSession();
+                localStorage.removeItem('emdrSessionData');
+                location.reload();
+            }
+        };
+
+        window.onload = () => app.init();
+    </script>
+</body>
+</html>
+
+
+```
